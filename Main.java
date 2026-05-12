@@ -4,14 +4,14 @@ public class Main {
     public static void main(String[] args) {
         // Initialize managers
         ProcessManager pm = new ProcessManager();
-        MemoryManager mm = new MemoryManager();
+        MemoryManager mm = new MemoryManager(10,10);
 
         // Initialize semaphores
         Semaphore memSemaphore = new Semaphore(1); 
 
         //make scanner to read input
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Welcome to MiniOS!");
+        System.out.println("Welcome to MiniOS! Type 'help' for a list of commands.");
 
         //determine if the mini os is still running or not
         boolean running = true;
@@ -72,13 +72,27 @@ public class Main {
                         break;
 
                     case "mem": // display memory layout using memory manager
-                        mm.printMemory();
+                        System.out.println(mm);
                         break;
 
                     case "exit": // terminate shell (set running to false)
                         running = false;
                         System.out.println("Exiting MiniOS...");
                         break;
+
+                    //print out all commands
+                    case "help":
+                        System.out.println("Available MiniOS Commands:");
+                        System.out.println("--------------------------------------------------");
+                        System.out.println("create [name]    - Create a new process with a name ");
+                        System.out.println("ps               - List all processes and their current states ");
+                        System.out.println("schedule         - Run processes using Round Robin scheduling ");
+                        System.out.println("alloc [pid] [sz] - Allocate memory blocks to a process (First-Fit) ");
+                        System.out.println("free [pid]       - Release all memory held by a specific process ");
+                        System.out.println("mem              - Display the current memory layout ");
+                        System.out.println("exit             - Terminate the MiniOS simulation ");
+                        System.out.println("--------------------------------------------------");
+    break;
 
                     default:
                         System.out.println("Unknown command: " + command);
