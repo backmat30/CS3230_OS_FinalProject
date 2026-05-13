@@ -6,9 +6,6 @@ public class Main {
         ProcessManager pm = new ProcessManager();
         MemoryManager mm = new MemoryManager(10,10);
 
-        // Initialize semaphores
-        Semaphore memSemaphore = new Semaphore(1); 
-
         //make scanner to read input
         Scanner scanner = new Scanner(System.in);
         System.out.println("Welcome to MiniOS! Type 'help' for a list of commands.");
@@ -48,10 +45,7 @@ public class Main {
                             int pid = Integer.parseInt(parts[1]);
                             int size = Integer.parseInt(parts[2]);
                             
-                            // Use semaphore for mutual exclusion
-                            memSemaphore.waitSem(); 
                             mm.allocate(pid, size);
-                            memSemaphore.signal();
                         } else {
                             System.out.println("Usage: alloc [pid] [size]"); //print usage if not enough args entered (need 2 args for command)
                         }
@@ -62,10 +56,7 @@ public class Main {
                             //convert the string to an integer
                             int pid = Integer.parseInt(parts[1]);
                             
-                            //use semaphore for mutual exclusion
-                            memSemaphore.waitSem();
                             mm.free(pid);
-                            memSemaphore.signal();
                         } else {
                             System.out.println("Usage: free [pid]"); //print usage if no more args entered
                         }
