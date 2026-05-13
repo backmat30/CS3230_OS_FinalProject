@@ -5,6 +5,8 @@ public class MemoryManager {
 
   private int[][] memory;
 
+  private Semaphore sem;
+
 /**
  * Constructs a new MemoryManager object with the specified number of pages in memory.
  * @param pageNum the number of pages in memory
@@ -13,6 +15,7 @@ public class MemoryManager {
   public MemoryManager(int pageNum, int pageSize) {
     this.pageSize = pageSize;
     memory = new int[pageNum][pageSize];
+    sem = new Semaphore(1);
   }
 
 /**
@@ -22,6 +25,12 @@ public class MemoryManager {
  * @return An Optional containing the page numbers of pages allocated to the process on success, otherwise an empty Optional.
  */
   public Optional<Integer[]> allocate(int pid, int size) {
+    try{
+      sem.waitSem();
+    } catch (InterruptedException e) {
+      System.err.println("Could not acquire semaphore in memory allocate");
+    }
+
     int pagesNeeded = (int) Math.ceil((double) size / pageSize);
     Integer[] allocatedPages = new Integer[pagesNeeded];
     
@@ -42,6 +51,7 @@ public class MemoryManager {
     }
 
     if(pagesNeeded == 0) {
+      sem.signal();
       return Optional.of(allocatedPages);
     } else {
       // If process cannot fit, deallocate any memory that was attempted to be allocated
@@ -54,6 +64,7 @@ public class MemoryManager {
       }
     }
 
+    sem.signal();
     return Optional.empty();
   }
 
@@ -62,6 +73,12 @@ public class MemoryManager {
  * @param pid The process ID of the process to clear from memory.
  */
   public void free(int pid) {
+    try{
+      sem.waitSem();
+    } catch (InterruptedException e) {
+      System.err.println("Could not acquire semaphore in memory free");
+    }
+
     for (int i = 0; i < memory.length; ++i) {
       if(memory[i][0] == pid) {
         for(int j = 0; j < pageSize; ++j) {
@@ -69,6 +86,8 @@ public class MemoryManager {
         }
       }
     }
+
+    sem.signal();
   }
 
 
@@ -86,6 +105,7 @@ public class MemoryManager {
       sb.append("   ");
       }
     }
+
     return sb.toString();
   }
 }
