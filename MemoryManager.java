@@ -23,7 +23,7 @@ public class MemoryManager {
  * Attempts to allocate memory to a process with the specified process ID and size. If allocation is successful, returns a list of pages allocated to the process.
  * @param pid The process ID of the process being allocated memory.
  * @param size The memory required by the process.
- * @return An Optional containing the page numbers of pages allocated to the process on success, otherwise an empty Optional.
+ * @return A boolean indicating if the operation was successful. True upon success, false on failure.
  */
   public boolean allocate(int pid, int size) {
     try {
