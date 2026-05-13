@@ -56,12 +56,12 @@ public class ProcessManager
         for (PCB process : processes)
         {
             // only schedule the READY processes
-            if (process.getState().equals("READY"))
+            if (process.getState() == PCB.State.READY)
             {
                 try
                 {
                     // change state to RUNNING
-                    process.setState("RUNNING");
+                    process.setState(PCB.State.RUNNING);
 
                     System.out.println(
                         "Running Process -> PID: " +
@@ -74,7 +74,7 @@ public class ProcessManager
                     Thread.sleep(5000);
 
                     // return process back to the READY state
-                    process.setState("READY");
+                    process.setState(PCB.State.READY);
 
                     System.out.println(
                         "Process " +
