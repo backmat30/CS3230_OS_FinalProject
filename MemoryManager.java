@@ -1,5 +1,3 @@
-import java.util.Optional;
-
 public class MemoryManager {
   private final int pageSize;
 
@@ -24,7 +22,7 @@ public class MemoryManager {
  * @param size The memory required by the process.
  * @return An Optional containing the page numbers of pages allocated to the process on success, otherwise an empty Optional.
  */
-  public Optional<Integer[]> allocate(int pid, int size) {
+  public boolean allocate(int pid, int size) {
     try{
       sem.waitSem();
     } catch (InterruptedException e) {
@@ -50,10 +48,8 @@ public class MemoryManager {
       currentPage++;
     }
 
-    if(pagesNeeded == 0) {
-      sem.signal();
-      return Optional.of(allocatedPages);
-    } else {
+    boolean success = pagesNeeded == 0;
+    if (!success) {
       // If process cannot fit, deallocate any memory that was attempted to be allocated
       for(Integer page : allocatedPages) {
         if(page != null) {
@@ -65,7 +61,7 @@ public class MemoryManager {
     }
 
     sem.signal();
-    return Optional.empty();
+    return success;
   }
 
 /**

@@ -45,7 +45,10 @@ public class Main {
                             int pid = Integer.parseInt(parts[1]);
                             int size = Integer.parseInt(parts[2]);
                             
-                            mm.allocate(pid, size);
+                            if(!mm.allocate(pid, size)) {
+                                System.out.println("Memory allocation failed for PID: " + pid);
+                                System.out.println("Not enough pages free for " + size + " bytes");
+                            }
                         } else {
                             System.out.println("Usage: alloc [pid] [size]"); //print usage if not enough args entered (need 2 args for command)
                         }
