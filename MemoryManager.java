@@ -3,6 +3,8 @@ public class MemoryManager {
 
   private int[][] memory;
 
+  private int freePageCount;
+
   private Semaphore sem;
 
 /**
@@ -13,6 +15,7 @@ public class MemoryManager {
   public MemoryManager(int pageNum, int pageSize) {
     this.pageSize = pageSize;
     memory = new int[pageNum][pageSize];
+    freePageCount = pageNum;
     sem = new Semaphore(1);
   }
 
@@ -23,45 +26,40 @@ public class MemoryManager {
  * @return An Optional containing the page numbers of pages allocated to the process on success, otherwise an empty Optional.
  */
   public boolean allocate(int pid, int size) {
-    try{
+    try {
       sem.waitSem();
     } catch (InterruptedException e) {
       System.err.println("Could not acquire semaphore in memory allocate");
     }
 
     int pagesNeeded = (int) Math.ceil((double) size / pageSize);
-    Integer[] allocatedPages = new Integer[pagesNeeded];
-    
-    int currentPage = 0;
-    while(currentPage < memory.length && pagesNeeded > 0) {
-      // check if page is used
-      if (memory[currentPage][0] == 0) {
-        allocatedPages[allocatedPages.length - pagesNeeded] = currentPage;
-        pagesNeeded--;
+    boolean enoughPages = pagesNeeded <= freePageCount;
 
-        // fill page, until either page is full or process is fully allocated
-        for (int i = 0; i < pageSize && size > 0; ++i) {
-          memory[currentPage][i] = pid;
-          size--;
-        }
-      }
-      currentPage++;
-    }
+    if (!enoughPages) {
+      System.out.printf("%d bytes requested requiring %d pages. %d pages available.\n", size, pagesNeeded, freePageCount);
+    } else {
+      freePageCount -= pagesNeeded;
+      Integer[] allocatedPages = new Integer[pagesNeeded];
+      
+      int currentPage = 0;
+      while (currentPage < memory.length && pagesNeeded > 0) {
+        // check if page is used
+        if (memory[currentPage][0] == 0) {
+          allocatedPages[allocatedPages.length - pagesNeeded] = currentPage;
+          pagesNeeded--;
 
-    boolean success = pagesNeeded == 0;
-    if (!success) {
-      // If process cannot fit, deallocate any memory that was attempted to be allocated
-      for(Integer page : allocatedPages) {
-        if(page != null) {
-          for (int i = 0; i < pageSize; ++i) {
-            memory[page][i] = 0;
+          // fill page, until either page is full or process is fully allocated
+          for (int i = 0; i < pageSize && size > 0; ++i) {
+            memory[currentPage][i] = pid;
+            size--;
           }
         }
+        currentPage++;
       }
     }
 
     sem.signal();
-    return success;
+    return enoughPages;
   }
 
 /**
@@ -76,8 +74,9 @@ public class MemoryManager {
     }
 
     for (int i = 0; i < memory.length; ++i) {
-      if(memory[i][0] == pid) {
-        for(int j = 0; j < pageSize; ++j) {
+      if (memory[i][0] == pid) {
+        freePageCount++;
+        for (int j = 0; j < pageSize; ++j) {
           memory[i][j] = 0;
         }
       }
